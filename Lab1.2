@@ -1,0 +1,23 @@
+#include <msp430.h> 
+
+
+/**
+ * main.c
+ */
+int main(void)
+{
+	WDTCTL = WDTPW | WDTHOLD;    // Stops watchdog timer
+    P1DIR = 0xFB;                // Setting Port One to all outputs
+                                 // Except position 5 as input
+    P1OUT = 0x00;                // Setting output to 0 which is off
+    while(1){                    // While condition true (One will always be
+                                 // considered as true)
+        if((P1IN & 0x04) == 0x04){
+            P1OUT |= 0x40;// lol or
+        }
+        else{
+            P1OUT &= 0x00;// lol and (toggle ) verificar ***
+        }
+    }
+	return 0;
+}
