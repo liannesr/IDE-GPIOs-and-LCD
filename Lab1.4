@@ -1,0 +1,85 @@
+#include <lcd.h>                                                                // Including our own lcd header file programmed in Lab1 part 3
+#include <msp430.h>                                                             // Including MSP430 family library
+
+/**
+ * main.c
+ */
+void main(void)
+{
+	WDTCTL = WDTPW | WDTHOLD;                                                   // Stop the watchdog timer
+	initialize();                                                               // Calling the function "initialize" from our lcd.h header class
+	                                                                            // This initialize function establishes output registers for the LCD]
+	                                                                            // The connections for the LCD are in P1, P4 and P3.
+	P6DIR= 0xF9;                                                                // Establishing the input pins for the push buttons in port P6 which are P6.1 & P6.2
+	unsigned char *ListOfMessages[] = {"1.Hola","2.somos","3.Giovanni","4.Lianne", //Creating an unsigned character pointer array with 17 messages
+	                                   "5.Yamuel","6.estudiantes","7.de","8.Micro 2.",
+	                                   "9.Nos","10.gusta","11.el","12.software","13.y",
+	                                   "14.el","15.hardware","16.Adios", "17.lol"};
+	int counter=0;                                                              // Initializing a counter to zero, this counter is the one that moves through the array
+	writeMessage(ListOfMessages[counter]);                                      // Calling the function "writeMessage" from our lcd.h header class, giving as parameter
+	                                                                            // The first char pointer of the pointer char array
+	setCursorDown();                                                            // Calling the function "seCursorDown" from out lcd.h header class that sets cursor in
+	                                                                            // position 0x40 from the LCD screen.
+	writeMessage(ListOfMessages[counter+1]);                                    // Calling the function "writeMessage" from our lcd.h header class, giving as parameter
+                                                                                // The second char pointer of the pointer char array.
+
+	while(1){                                                                   // While 1, being while true is a loop that does not have end.
+	    if((P6IN & 0x02)==0x00){                                                // When PB1 is pressed go into the block of if statement, PB1 is located in P6.1
+	                                                                            // and is connected to a pull up resistor so its reading a logic '1' all the time
+	                                                                            // and a logic '0' when pressed, when PB1 is pressed we will get xxxxx00x, which means
+	                                                                            // that if we perform and with 0x02 the result when PB1 is being pressed has to be 0x00.
+	        counter+=2;                                                       // We increment the counter by the value of one.
+	        if(counter==16){
+	            clear();// If counter equals 17, a non-valid position in array
+	            setCursorUp();
+	            writeMessage(ListOfMessages[counter-1]);                              // Calling function "writeMessage" to write the message on first line.
+	            setCursorDown();
+	            writeMessage(ListOfMessages[counter]);                              // Calling function "writeMessage" to write the message on first line.
+	            counter=-2;                                                     // Then, counter is set to 0 (starts from the beginning of list).
+	        }
+	        else{
+
+	        clear();                                                            // Calling "clear" function from lcd.h that clears the display.
+	        setCursorUp();                                                      // Calling "setCursorUp" function from lcd.h that sets cursor in position 0x00.
+	        writeMessage(ListOfMessages[counter]);                              // Calling function "writeMessage" to write the message on first line.
+	        setCursorDown();                                                    // Calling "setCursorDown" function from lcd.h that sets cursor in position 0x40.
+	                                                          // SPECIAL CASE, when counter is 16 the next position is invalid
+	            //writeMessage(ListOfMessages[counter]);                                // then, "writeMessage" in position 0 of array.
+
+	                                                                       // Else, all counters are valid
+	            writeMessage(ListOfMessages[counter+1]);                        // "writeMessage" in the position after counter.
+	        }
+
+	    }
+	    else if((P6IN & 0x06)==0x06){                                           // When PB2 is pressed go into the block of if statement, PB2 is located in P6.2
+                                                                                // and is connected to a pull down resistor so its reading a logic '0' all the time
+                                                                                // and a logic '1' when pressed, when PB2 is pressed we will get xxxxx11x, which means
+                                                                                // that if we perform an and with 0x06 the result when PB2 is being pressed has to be 0x06.
+	        counter-=2;                                                          // We decrement the counter by the value of one.
+	        if(counter<=0){
+	            clear();                                                            // Calling "clear" method from lcd.h header class to clear display.
+	            setCursorUp();                                                    // Calling "setCursorDown" from lcd.h to set cursor in position 0x40.
+	            // if(counter==16){                                                    // If counter equals 16 the next value is invalid
+	            writeMessage(ListOfMessages[counter]);                                // then, we write the next available value which is position 0 of array.
+	            setCursorDown();                                                  // set cursor in position 0x40.
+	            writeMessage(ListOfMessages[counter+1]);                          // and write on the top row the current element// If counter equals -1 i went out of range because the lowest index in array is 0.
+	            counter=18;
+	            // then, set counter to 16 which is the highest index in the array.
+	        }
+	        else{
+	        clear();                                                            // Calling "clear" method from lcd.h header class to clear display.
+	        setCursorUp();                                                    // Calling "setCursorDown" from lcd.h to set cursor in position 0x40.
+	       // if(counter==16){                                                    // If counter equals 16 the next value is invalid
+	            writeMessage(ListOfMessages[counter-1]);                                // then, we write the next available value which is position 0 of array.
+	            setCursorDown();                                                  // set cursor in position 0x40.
+	            writeMessage(ListOfMessages[counter]);                          // and write on the top row the current element.
+	        //}
+//	        else{                                                               // Else, is a valid index/counter
+//	            writeMessage(ListOfMessages[counter+1]);                        // Writing in lower row the next element in list
+//	            setCursorUp();                                                  // set cursor in position 0x00
+//	            writeMessage(ListOfMessages[counter]);                          // writing the message of the current element in list
+//	        }
+	        }
+	    }                                                                       // DO NOTHING IF BUTTONS NOT PRESSED
+	}
+}
