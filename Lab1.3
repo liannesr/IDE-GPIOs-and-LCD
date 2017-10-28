@@ -1,0 +1,116 @@
+#include <msp430.h> 
+
+
+/**
+ * lcd.c
+ */
+void lcdEnable(){
+    P6OUT ^= 0x04;
+    __delay_cycles(10000);
+    P6OUT ^= 0x04;
+}
+
+void command(unsigned int value){
+    P6OUT = 0x00;
+    P3OUT = value & 0xFF;
+    lcdEnable();
+}
+
+void clear(){
+    P6OUT = 0x00;
+    P3OUT = 0x01;
+    lcdEnable();
+
+}
+
+void writeCharacter(unsigned char letter){
+    P6OUT = 0x02;
+    P3OUT = letter & 0xFF;
+    lcdEnable();
+}
+
+void writeMessage(unsigned char message[]){
+    int i;
+    for( i=0; i<strlen(message); i++){
+        writeCharacter(message[i]);
+    }
+}
+
+void setCursor(unsigned int value, unsigned int row){
+    P6OUT = 0x00;
+
+    if(row == 0)
+        P3OUT = value | 0x80;
+    else if(row == 1)
+        P3OUT = value | 0xC0;
+    else
+        return;
+    lcdEnable();
+}
+
+void setCursorDown(){
+    P6OUT = 0x00;
+    P3OUT = 0xC0;
+    lcdEnable();
+}
+void setCursorUp(){
+    P6OUT = 0x00;
+    P3OUT = 0x80;
+    lcdEnable();
+}
+
+int main(void)
+{
+    P6DIR=0xFF;
+    P3DIR=0xFF;
+
+    WDTCTL = WDTPW | WDTHOLD;	// stop watchdog timer
+    __delay_cycles(10000);
+
+    //FunctionSETCommand
+    P6OUT = 0x00; //
+    P3OUT = 0x3C;
+
+    lcdEnable();
+    __delay_cycles(10000);
+
+
+    P6OUT = 0x00; //FSC
+    P3OUT = 0x3C;
+
+    lcdEnable();
+
+    __delay_cycles(10000);
+
+
+    P6OUT = 0x00; //FSC
+    P3OUT = 0x3C;
+
+    lcdEnable();
+
+    P6OUT = 0x00; //
+    P3OUT = 0x0F;
+
+    lcdEnable();
+
+
+    P6OUT = 0x00; //
+    P3OUT = 0x01;
+
+
+    lcdEnable();
+
+    P6OUT = 0x00; //
+    P3OUT = 0x06;
+
+    lcdEnable();
+
+
+
+    clear();
+    writeMessage("liannesanchezrod");
+    setCursorUp();
+    writeCharacter('L');
+    setCursor(15,2);
+    return 0;
+}
